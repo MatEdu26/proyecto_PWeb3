@@ -14,7 +14,6 @@ const rateLimit = require("express-rate-limit");
 const JWT_SECRET = "clave_token";
 const session = require("express-session");
 
-
 app.use(
   session({
     secret: "tu_secreto_de_sesion", // cambia por algo seguro
@@ -40,7 +39,9 @@ app.use(morgan("combined"));
 crearTabla();
 crearTablaUsuarios();
 
+app.use(express.static(path.join(__dirname, "Front")));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(methodOverride("_method"));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -99,11 +100,11 @@ function autorizarRoles(...roles) {
 }
 
 app.get("/", (req, res) => {
-  res.render("index.ejs");
+  res.sendFile(path.join(__dirname, "Front", "index.html"));
 });
 
-app.get("/acerca", (req, res) => {
-  res.render("acerca.ejs");
+app.get("/nosotros", (req, res) => {
+  res.sendFile(path.join(__dirname, "Front", "nosotros.html"));
 });
 
 app.get("/productos", autenticarJWT, async (req, res) => {
@@ -275,8 +276,19 @@ app.post(
   }
 );
 
-app.get("/login", (req, res) => {
-  res.render("login.ejs", { errores: [] });
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Front', 'login.html'));
+});
+
+
+app.get("/api/usuario", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json(null);
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(401).json(null);
+    res.json({ usuario: user.usuario, rol: user.rol });
+  });
 });
 
 app.post("/logout", (req, res) => {
@@ -284,51 +296,53 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-app.post(
-  "/login",
-  limiterLogin,
-  [body("usuario").trim().notEmpty().escape(), body("contraseña").notEmpty()],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).render("login.ejs", { errores: errors.array() });
-    }
+app.post("/login", limiterLogin, async (req, res) => {
+  const { usuario, contraseña } = req.body;
 
-    const { usuario, contraseña } = req.body;
+  // Validar campos (puedes usar express-validator o manualmente)
+  if (!usuario || !contraseña) {
+    return res
+      .status(400)
+      .json({ errores: [{ msg: "Usuario y contraseña son obligatorios" }] });
+  }
+
+  try {
     const user =
       await db.sql`SELECT * FROM Usuarios WHERE usuario = ${usuario}`;
 
     if (!user[0]) {
-      return res.status(401).render("login.ejs", {
-        errores: [{ msg: "Usuario o contraseña incorrectos" }],
-      });
+      return res
+        .status(401)
+        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
     }
 
     const match = await bcrypt.compare(contraseña, user[0].contraseña);
     if (!match) {
-      return res.status(401).render("login.ejs", {
-        errores: [{ msg: "Usuario o contraseña incorrectos" }],
-      });
+      return res
+        .status(401)
+        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
     }
 
-    // Generar JWT
     const token = jwt.sign(
       { usuario: user[0].usuario, rol: user[0].rol },
       JWT_SECRET,
       { expiresIn: "2h" }
     );
 
-    // Guardar token en cookie HttpOnly
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Cambia a true si usas HTTPS
-      maxAge: 2 * 60 * 60 * 1000, // 2 horas
+      secure: false, // Cambiar a true si usas HTTPS
+      maxAge: 2 * 60 * 60 * 1000,
     });
 
-    // Redirigir a página protegida o inicio
-    res.redirect("/");
+    return res.status(200).json({ mensaje: "Login exitoso" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ errores: [{ msg: "Error interno del servidor" }] });
   }
-);
+});
 
 app.get(
   "/admin/usuarios",
