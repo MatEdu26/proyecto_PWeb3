@@ -1,7 +1,6 @@
-
 async function cargarUsuario() {
   try {
-    const res = await fetch('/api/usuario', { credentials: 'include' });
+    const res = await fetch('http://localhost:5000/api/usuario', { credentials: 'include' });
     if (!res.ok) throw new Error('No autorizado');
     const user = await res.json();
 
@@ -27,7 +26,7 @@ async function cargarUsuario() {
 
       document.getElementById('logout-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        await fetch('/logout', { method: 'POST', credentials: 'include' });
+        await fetch('http://localhost:5000/logout', { method: 'POST', credentials: 'include' });
         window.location.href = '/login';
       });
 

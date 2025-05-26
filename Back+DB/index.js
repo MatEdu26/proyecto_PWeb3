@@ -13,6 +13,7 @@ const methodOverride = require("method-override");
 const rateLimit = require("express-rate-limit");
 const JWT_SECRET = "clave_token";
 const session = require("express-session");
+const cors = require('cors');
 
 app.use(
   session({
@@ -45,6 +46,15 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
+
+const corsOptions = {
+  origin: 'http://localhost:5500', // Origen permitido (tu frontend)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  credentials: true, // Permite enviar cookies y credenciales
+};
+
+app.use(cors(corsOptions));
 
 app.listen(5000);
 console.log("Servidor funcionando en el puerto 5000");
