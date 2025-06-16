@@ -1,6 +1,6 @@
 async function cargarUsuario() {
   try {
-    const res = await fetch('http://localhost:5000/api/usuario', { credentials: 'include' });
+    const res = await fetch('http://localhost:3000/api/usuario', { credentials: 'include' });
     if (!res.ok) throw new Error('No autorizado');
     const user = await res.json();
 
@@ -26,7 +26,7 @@ async function cargarUsuario() {
 
       document.getElementById('logout-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        await fetch('http://localhost:5000/logout', { method: 'POST', credentials: 'include' });
+        await fetch('http://localhost:3000/logout', { method: 'POST', credentials: 'include' });
         window.location.href = '/proyecto_PWeb3/Front/login.html';
       });
 

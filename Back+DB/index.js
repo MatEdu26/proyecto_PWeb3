@@ -48,7 +48,7 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: "http://localhost:5500", // Origen permitido (tu frontend)
+  origin: "http://localhost:5501", // Origen permitido (tu frontend)
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
   allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
   credentials: true, // Permite enviar cookies y credenciales
@@ -56,8 +56,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.listen(5000);
-console.log("Servidor funcionando en el puerto 5000");
+app.listen(3000);
+console.log("Servidor funcionando en el puerto 3000");
 
 function autenticarJWT(req, res, next) {
   const token = req.cookies.token;
@@ -168,6 +168,30 @@ app.post(
 );
 
 app.get(
+  "/api/productos/:id",
+  autenticarJWT,
+  autorizarRoles("empleado", "admin"),
+  [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: "ID inválido" });
+    }
+    try {
+      const result =
+        await db.sql`SELECT * FROM Productos WHERE Producto_ID = ${req.params.id}`;
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Producto no encontrado" });
+      }
+      res.json(result[0]);
+    } catch (err) {
+      console.error("📝 Error obteniendo producto:", err);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+);
+
+app.get(
   "/crear",
   autenticarJWT,
   autorizarRoles("empleado", "admin"),
@@ -175,6 +199,45 @@ app.get(
     res.sendFile(path.join(__dirname, "Front", "crear_producto.html"));
   }
 );
+
+app.put(
+  "/api/productos/:id",
+  autenticarJWT,
+  autorizarRoles("empleado", "admin"),
+  limiterCRUD,
+  [
+    body("Nombre")
+      .trim()
+      .notEmpty()
+      .withMessage("El nombre es obligatorio")
+      .escape(),
+    body("Precio")
+      .notEmpty()
+      .withMessage("El precio es obligatorio")
+      .isFloat({ gt: 0 })
+      .withMessage("El precio debe ser un número positivo"),
+    body("Descripcion").trim().escape(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errores: errors.array() });
+    }
+
+    try {
+      const result = await db.sql`
+        UPDATE Productos 
+        SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion} 
+        WHERE Producto_ID = ${req.params.id}
+      `;
+      res.json({ mensaje: "Producto actualizado con éxito" });
+    } catch (err) {
+      console.error("✏️ Error actualizando producto:", err);
+      res.status(500).json({ error: "Error al actualizar producto" });
+    }
+  }
+);
+
 
 // //sanitizacion y validacion (REEMPLAZADA POR APP.POST("/PRODUCTOS"))
 // app.post(
@@ -221,64 +284,57 @@ app.get(
   autenticarJWT,
   autorizarRoles("empleado", "admin"),
   [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
-  async (req, res) => {
+  (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).send("ID inválido");
     }
-    try {
-      const result =
-        await db.sql`SELECT * FROM Productos WHERE Producto_ID = ${req.params.id}`;
-      res.render("editar.ejs", { modelo: result[0] });
-    } catch (err) {
-      console.error("📝 Error cargando edición:", err);
-      res.redirect("/productos");
-    }
+    res.sendFile(path.join(__dirname, "Front", "editar_producto.html"));
   }
 );
 
-//sanitizacion y validacion
-app.post(
-  "/editar/:id",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  limiterCRUD,
-  [
-    body("Nombre")
-      .trim()
-      .notEmpty()
-      .withMessage("El nombre es obligatorio")
-      .escape(),
-    body("Precio")
-      .notEmpty()
-      .withMessage("El precio es obligatorio")
-      .isFloat({ gt: 0 })
-      .withMessage("El precio debe ser un número positivo"),
-    body("Descripcion").trim().escape(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      // Puedes pasar los errores y datos para que el usuario corrija
-      return res.status(400).render("editar.ejs", {
-        modelo: { ...req.body, Producto_ID: req.params.id },
-        errores: errors.array(),
-      });
-    }
+// //sanitizacion y validacion (REEMPLAZADA POR APP.PUT("/api/productos/:id"))
+// app.post(
+//   "/editar/:id",
+//   autenticarJWT,
+//   autorizarRoles("empleado", "admin"),
+//   limiterCRUD,
+//   [
+//     body("Nombre")
+//       .trim()
+//       .notEmpty()
+//       .withMessage("El nombre es obligatorio")
+//       .escape(),
+//     body("Precio")
+//       .notEmpty()
+//       .withMessage("El precio es obligatorio")
+//       .isFloat({ gt: 0 })
+//       .withMessage("El precio debe ser un número positivo"),
+//     body("Descripcion").trim().escape(),
+//   ],
+//   async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       // Puedes pasar los errores y datos para que el usuario corrija
+//       return res.status(400).render("editar.ejs", {
+//         modelo: { ...req.body, Producto_ID: req.params.id },
+//         errores: errors.array(),
+//       });
+//     }
 
-    try {
-      await db.sql`
-        UPDATE Productos 
-        SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion} 
-        WHERE Producto_ID = ${req.params.id}
-      `;
-      res.redirect("/productos");
-    } catch (err) {
-      console.error("✏️ Error actualizando producto:", err);
-      res.status(500).send("Error al actualizar");
-    }
-  }
-);
+//     try {
+//       await db.sql`
+//         UPDATE Productos 
+//         SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion} 
+//         WHERE Producto_ID = ${req.params.id}
+//       `;
+//       res.redirect("/productos");
+//     } catch (err) {
+//       console.error("✏️ Error actualizando producto:", err);
+//       res.status(500).send("Error al actualizar");
+//     }
+//   }
+// );
 
 app.get(
   "/eliminar/:id",
