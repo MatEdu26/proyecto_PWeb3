@@ -27,15 +27,15 @@ async function cargarUsuario() {
       document.getElementById('logout-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         await fetch('http://localhost:5000/logout', { method: 'POST', credentials: 'include' });
-        window.location.href = '/login';
+        window.location.href = '/proyecto_PWeb3/Front/login.html';
       });
 
     } else {
       // Mostrar botón login
-      userActions.innerHTML = `<a href="/login" class="login-btn">Login</a>`;
+      userActions.innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
     }
   } catch (error) {
-    document.getElementById('user-actions').innerHTML = `<a href="/login" class="login-btn">Login</a>`;
+    document.getElementById('user-actions').innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
   }
 }
 
