@@ -1,0 +1,58 @@
+.productos-contenedor {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+    .tarjeta-producto {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      width: 270px;
+      padding: 24px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      transition: box-shadow 0.2s;
+    }
+    .tarjeta-producto:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .tarjeta-producto h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.2em;
+      color: #0d2233;
+    }
+    .tarjeta-producto .precio {
+      font-weight: bold;
+      color: #1b7e2a;
+      margin-bottom: 8px;
+    }
+    .tarjeta-producto .descripcion {
+      color: #444;
+      font-size: 0.98em;
+    }
+    .tarjeta-producto .acciones {
+      margin-top: 18px;
+      width: 100%;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .tarjeta-producto .acciones button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 5px;
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: background 0.2s;
+    }
+    .tarjeta-producto .acciones .eliminar {
+      background: #e53935;
+    }
+    .tarjeta-producto .acciones button:hover {
+      opacity: 0.85;

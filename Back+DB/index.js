@@ -13,7 +13,7 @@ const methodOverride = require("method-override");
 const rateLimit = require("express-rate-limit");
 const JWT_SECRET = "clave_token";
 const session = require("express-session");
-const cors = require('cors');
+const cors = require("cors");
 
 app.use(
   session({
@@ -48,9 +48,9 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: 'http://localhost:5500', // Origen permitido (tu frontend)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  origin: "http://localhost:5500", // Origen permitido (tu frontend)
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
+  allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
   credentials: true, // Permite enviar cookies y credenciales
 };
 
@@ -117,28 +117,22 @@ app.get("/nosotros", (req, res) => {
   res.sendFile(path.join(__dirname, "Front", "nosotros.html"));
 });
 
-app.get("/productos", autenticarJWT, async (req, res) => {
+app.get("/productos", autenticarJWT, (req, res) => {
+  res.sendFile(path.join(__dirname, "Front", "productos.html"));
+});
+
+app.get("/api/productos", autenticarJWT, async (req, res) => {
   try {
     const result = await db.sql("SELECT * FROM Productos ORDER BY Nombre");
-    res.render("productos.ejs", { modelo: result });
+    res.json(result);
   } catch (err) {
     console.error("🚨 Error obteniendo productos:", err);
-    res.status(500).send("Error interno del servidor");
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
-app.get(
-  "/crear",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  (req, res) => {
-    res.render("crear.ejs", { modelo: {} });
-  }
-);
-
-//sanitizacion y validacion
 app.post(
-  "/crear",
+  "/api/productos",
   autenticarJWT,
   autorizarRoles("empleado", "admin"),
   limiterCRUD,
@@ -158,23 +152,69 @@ app.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).render("crear.ejs", {
-        modelo: req.body,
-        errores: errors.array(),
-      });
+      return res.status(400).json({ errores: errors.array() });
     }
 
     const { Nombre, Precio, Descripcion } = req.body;
 
     try {
       await db.sql`INSERT INTO Productos (Nombre, Precio, Descripcion) VALUES (${Nombre}, ${Precio}, ${Descripcion})`;
-      res.redirect("/productos");
+      res.status(201).json({ mensaje: "Producto creado con éxito" });
     } catch (err) {
       console.error("Error creando producto:", err);
-      res.status(500).send("Error al crear producto");
+      res.status(500).json({ error: "Error al crear producto" });
     }
   }
 );
+
+app.get(
+  "/crear",
+  autenticarJWT,
+  autorizarRoles("empleado", "admin"),
+  (req, res) => {
+    res.sendFile(path.join(__dirname, "Front", "crear_producto.html"));
+  }
+);
+
+// //sanitizacion y validacion (REEMPLAZADA POR APP.POST("/PRODUCTOS"))
+// app.post(
+//   "/crear",
+//   autenticarJWT,
+//   autorizarRoles("empleado", "admin"),
+//   limiterCRUD,
+//   [
+//     body("Nombre")
+//       .trim()
+//       .notEmpty()
+//       .withMessage("El nombre es obligatorio")
+//       .escape(),
+//     body("Precio")
+//       .notEmpty()
+//       .withMessage("El precio es obligatorio")
+//       .isFloat({ gt: 0 })
+//       .withMessage("El precio debe ser un número positivo"),
+//     body("Descripcion").trim().escape(),
+//   ],
+//   async (req, res) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).render("crear.ejs", {
+//         modelo: req.body,
+//         errores: errors.array(),
+//       });
+//     }
+
+//     const { Nombre, Precio, Descripcion } = req.body;
+
+//     try {
+//       await db.sql`INSERT INTO Productos (Nombre, Precio, Descripcion) VALUES (${Nombre}, ${Precio}, ${Descripcion})`;
+//       res.redirect("/productos");
+//     } catch (err) {
+//       console.error("Error creando producto:", err);
+//       res.status(500).send("Error al crear producto");
+//     }
+//   }
+// );
 
 app.get(
   "/editar/:id",
@@ -286,10 +326,9 @@ app.post(
   }
 );
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Front', 'login.html'));
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "Front", "login.html"));
 });
-
 
 app.get("/api/usuario", (req, res) => {
   const token = req.cookies.token;

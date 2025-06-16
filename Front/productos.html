@@ -1,25 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/style.css" />
+    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/productos.css" />
     <title>Productos</title>
-</head>
-<body>
+  </head>
+  <body>
     <header class="header">
-    <img src="/proyecto_PWeb3/Front/img/banner.jpg" alt="Imagen Superior" class="banner-img" />
-    <nav class="menu" id="menu-nav">
-      <a href="/proyecto_PWeb3/Front/index.html">Inicio</a>
-      <a href="/proyecto_PWeb3/Front/productos.html">Productos</a>
-      <a href="/proyecto_PWeb3/Front/nosotros.html">Nosotros</a>
-      <!-- Aquí se agregará "Gestión de Usuarios" si el usuario es admin -->
-    </nav>
+      <img
+        src="/proyecto_PWeb3/Front/img/banner.jpg"
+        alt="Imagen Superior"
+        class="banner-img"
+      />
+      <nav class="menu" id="menu-nav">
+        <a href="/proyecto_PWeb3/Front/index.html">Inicio</a>
+        <a href="/proyecto_PWeb3/Front/productos.html">Productos</a>
+        <a href="/proyecto_PWeb3/Front/nosotros.html">Nosotros</a>
+        <!-- Aquí se agregará "Gestión de Usuarios" si el usuario es admin -->
+      </nav>
 
-    <div class="user-actions" id="user-actions">
-      <!-- Aquí se mostrará login o info de usuario dinámicamente -->
-    </div>
-  </header>
-    
-</body>
+      <div class="user-actions" id="user-actions">
+        <!-- Aquí se mostrará login o info de usuario dinámicamente -->
+      </div>
+    </header>
+
+    <main>
+      <h1 style="text-align: center; margin-top: 30px">Lista de Productos</h1>
+      <div id="productos-contenedor" class="productos-contenedor"></div>
+    </main>
+
+    <footer class="footer">
+      <p>©2025 Matias Bassi. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/proyecto_PWeb3/Front/js/productos.js"></script>
+  </body>
 </html>

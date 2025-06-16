@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/style.css" />
+    <link
+      rel="stylesheet"
+      href="/proyecto_PWeb3/Front/css/crear_producto.css"
+    />
+    <title>Crear Producto</title>
+  </head>
+  <body>
+    <header class="header">
+      <img
+        src="/proyecto_PWeb3/Front/img/banner.jpg"
+        alt="Imagen Superior"
+        class="banner-img"
+      />
+      <nav class="menu" id="menu-nav">
+        <a href="/proyecto_PWeb3/Front/index.html">Inicio</a>
+        <a href="/proyecto_PWeb3/Front/productos.html">Productos</a>
+        <a href="/proyecto_PWeb3/Front/nosotros.html">Nosotros</a>
+      </nav>
+      <div class="user-actions" id="user-actions"></div>
+    </header>
+
+    <main>
+      <h1>Crear Nuevo Producto</h1>
+      <form id="form-crear-producto">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required maxlength="100" />
+
+        <label for="precio">Precio:</label>
+        <input
+          type="number"
+          id="precio"
+          name="precio"
+          required
+          min="0"
+          step="0.01"
+        />
+
+        <label for="descripcion">Descripción:</label>
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          maxlength="500"
+        ></textarea>
+
+        <button type="submit">Crear Producto</button>
+        <div id="mensaje" class="mensaje"></div>
+      </form>
+    </main>
+
+    <footer class="footer">
+      <p>©2025 Matias Bassi. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/proyecto_PWeb3/Front/js/index.js"></script>
+    <script src="/proyecto_PWeb3/Front/js/crear_producto.js"></script>
+  </body>
+</html>
