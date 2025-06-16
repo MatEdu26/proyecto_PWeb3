@@ -238,7 +238,6 @@ app.put(
   }
 );
 
-
 // //sanitizacion y validacion (REEMPLAZADA POR APP.POST("/PRODUCTOS"))
 // app.post(
 //   "/crear",
@@ -324,8 +323,8 @@ app.get(
 
 //     try {
 //       await db.sql`
-//         UPDATE Productos 
-//         SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion} 
+//         UPDATE Productos
+//         SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion}
 //         WHERE Producto_ID = ${req.params.id}
 //       `;
 //       res.redirect("/productos");
@@ -336,33 +335,8 @@ app.get(
 //   }
 // );
 
-app.get(
-  "/eliminar/:id",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send("ID inválido");
-    }
-    try {
-      const result =
-        await db.sql`SELECT * FROM Productos WHERE Producto_ID = ${req.params.id}`;
-      if (!result[0]) {
-        return res.status(404).send("Producto no encontrado");
-      }
-      res.render("eliminar.ejs", { modelo: result[0] });
-    } catch (err) {
-      console.error("Error cargando producto para eliminar:", err);
-      res.redirect("/productos");
-    }
-  }
-);
-
-//sanitizacion y validacion
-app.post(
-  "/eliminar/:id",
+app.delete(
+  "/api/productos/:id",
   autenticarJWT,
   autorizarRoles("empleado", "admin"),
   limiterCRUD,
@@ -370,14 +344,18 @@ app.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).send("ID inválido");
+      return res.status(400).json({ errores: errors.array() });
     }
     try {
-      await db.sql`DELETE FROM Productos WHERE Producto_ID = ${req.params.id}`;
-      res.redirect("/productos");
+      const result =
+        await db.sql`DELETE FROM Productos WHERE Producto_ID = ${req.params.id}`;
+      if (result.rowsAffected === 0) {
+        return res.status(404).json({ error: "Producto no encontrado" });
+      }
+      res.status(200).json({ mensaje: "Producto eliminado con éxito" });
     } catch (err) {
       console.error("🗑️ Error eliminando producto:", err);
-      res.status(500).send("Error al eliminar");
+      res.status(500).json({ error: "Error al eliminar producto" });
     }
   }
 );
@@ -549,6 +527,6 @@ app.delete(
 );
 
 //este metodo siempre debe ir al final
-app.use((req, res) => {
-  res.status(404).render("notfound.ejs");
+app.use((req, res, next) => {
+  res.status(404).sendFile(path.join(__dirname, "Front", "404.html"));
 });

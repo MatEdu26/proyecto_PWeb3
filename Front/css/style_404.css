@@ -1,0 +1,56 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+.banner-img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+nav.menu {
+  margin-bottom: 30px;
+}
+nav.menu a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #1976d2;
+  font-weight: bold;
+}
+nav.menu a:hover {
+  text-decoration: underline;
+}
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 15px;
+  color: #0d2233;
+}
+p {
+  font-size: 1.2em;
+  margin-bottom: 25px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centra horizontalmente */
+  justify-content: center; /* centra verticalmente si el contenedor tiene altura */
+  min-height: 60vh; /* para que el main tenga altura y se note el centrado vertical */
+  text-align: center; /* centra el texto */
+  gap: 20px; /* espacio entre elementos */
+  padding: 20px;
+}
+
+.contenedor-imagen img {
+  max-width: 400px; /* tamaño máximo de la imagen */
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 auto; /* asegura que la imagen se centre */
+}
