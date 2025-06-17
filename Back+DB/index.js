@@ -14,7 +14,6 @@ const { rateLimit } = require('express-rate-limit');
 const JWT_SECRET = "clave_token";
 const session = require("express-session");
 const cors = require("cors");
-app.use(limiter);
 
 app.use(
   session({
@@ -23,6 +22,12 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 peticiones por IP
+  message: "Demasiadas peticiones desde esta IP. Intenta más tarde.",
+});
 
 const limiterLogin = rateLimit({
   windowMs: 10 * 60 * 1000, // 15 minutos
@@ -36,12 +41,14 @@ const limiterCRUD = rateLimit({
   message: "Demasiadas operaciones. Intenta más tarde.",
 });
 
+app.use(limiter);
+
 app.use(morgan("combined"));
 
 crearTabla();
 crearTablaUsuarios();
 
-app.use(express.static(path.join(__dirname, "Front")));
+app.use('/proyecto_PWeb3/Front', express.static(path.join(__dirname, 'Front')));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -49,7 +56,7 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: "http://localhost:5501", // Origen permitido (tu frontend)
+  origin: ["http://localhost:5501", "http://127.0.0.1:5501"], // Origen permitido (tu frontend)
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
   allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
   credentials: true, // Permite enviar cookies y credenciales
@@ -63,19 +70,17 @@ console.log("Servidor funcionando en el puerto 3000");
 function autenticarJWT(req, res, next) {
   const token = req.cookies.token;
   if (!token) {
-    // Si no hay token, redirige a login (o responde 401 si es API)
-    return res.redirect("/login");
+    return res.status(401).json({ error: "No autorizado" });
   }
-
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      // Token inválido, redirige a login
-      return res.redirect("/login");
+      return res.status(401).json({ error: "Token inválido" });
     }
-    req.user = user; // { usuario, rol }
+    req.user = user;
     next();
   });
 }
+
 
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
@@ -323,6 +328,7 @@ app.post("/login", limiterLogin, async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: false, // Cambiar a true si usas HTTPS
+      sameSite: "lax",
       maxAge: 2 * 60 * 60 * 1000,
     });
 
