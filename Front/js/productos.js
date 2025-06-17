@@ -22,12 +22,12 @@ async function cargarProductos() {
             <div class="precio">$${parseFloat(prod.Precio).toFixed(2)}</div>
             <div class="descripcion">${prod.Descripcion || ""}</div>
             <div class="acciones">
-              <a href="/proyecto_PWeb3/Front/editar.html?id=${
+              <a href="/proyecto_PWeb3/Front/editar_producto.html?id=${
                 prod.Producto_ID
               }">
                 <button>Editar</button>
               </a>
-              <a href="/proyecto_PWeb3/Front/eliminar.html?id=${
+              <a href="/proyecto_PWeb3/Front/eliminarprod.html?id=${
                 prod.Producto_ID
               }">
                 <button class="eliminar">Eliminar</button>

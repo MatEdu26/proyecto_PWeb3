@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este proyecto corresponde al backend y base de datos de la aplicación desarrollada para la materia **Programación Web 3** (1° Cuatrimestre 2025). Actualmente, el frontend está en desarrollo y será incorporado próximamente.
+Este proyecto corresponde al backend, base de datos y frontend de la aplicación desarrollada para la materia **Programación Web 3** (1° Cuatrimestre 2025). El frontend está desarrollado con HTML, CSS y JavaScript estático, consumiendo la API REST del backend para gestionar productos y usuarios.
 
 ---
 
@@ -30,17 +30,29 @@ El backend está desarrollado con **Node.js** y utiliza el framework **Express**
 
 - **SQLite**: Base de datos ligera, integrada y fácil de usar para almacenamiento local y desarrollo rápido.
 
+### Frontend
+
+- Desarrollado con **HTML**, **CSS** y **JavaScript** puro, sin frameworks.
+- Arquitectura basada en archivos estáticos que consumen la API REST del backend.
+- Gestión completa de productos y usuarios desde interfaces amigables.
+- Uso de fetch API para autenticación, autorización, creación, edición y eliminación.
+- Manejo dinámico del menú y vistas según el rol del usuario (admin, empleado, usuario).
+- Diseño responsivo y accesible, con validación y mensajes claros.
+
 ---
 
 ## Estructura del proyecto
 
 - `index.js`: Archivo principal que configura el servidor, las rutas, middleware y la conexión a la base de datos.
+- `/Front/`: Carpeta con los archivos estáticos del frontend (HTML, CSS, JS, imágenes).
 
 ---
 
 ## Cómo ejecutar el proyecto
 
 1. Clona el repositorio:
+
+
 
 git clone <https://github.com/MatEdu26/proyecto_PWeb3>
 
@@ -62,12 +74,7 @@ node index.js
 
 5. El servidor estará corriendo en `http://localhost:3000` (o el puerto configurado en `index.js`).
 
----
-
-## Próximos pasos
-
-- Desarrollo del frontend para consumir la API del backend.
-- Mejoras en la seguridad y manejo de errores.
+6. Accede a las vistas frontend desde la carpeta `/Front/` (por ejemplo, `http://localhost:3000/proyecto_PWeb3/Front/index.html`).
 
 ---
 

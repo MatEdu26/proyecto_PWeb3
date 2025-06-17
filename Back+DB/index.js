@@ -10,10 +10,11 @@ const morgan = require("morgan");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const methodOverride = require("method-override");
-const rateLimit = require("express-rate-limit");
+const { rateLimit } = require('express-rate-limit');
 const JWT_SECRET = "clave_token";
 const session = require("express-session");
 const cors = require("cors");
+app.use(limiter);
 
 app.use(
   session({
@@ -24,7 +25,7 @@ app.use(
 );
 
 const limiterLogin = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 10 * 60 * 1000, // 15 minutos
   max: 5, // máximo 5 intentos de login por IP
   message: "Demasiados intentos de login. Intenta más tarde.",
 });
@@ -238,46 +239,6 @@ app.put(
   }
 );
 
-// //sanitizacion y validacion (REEMPLAZADA POR APP.POST("/PRODUCTOS"))
-// app.post(
-//   "/crear",
-//   autenticarJWT,
-//   autorizarRoles("empleado", "admin"),
-//   limiterCRUD,
-//   [
-//     body("Nombre")
-//       .trim()
-//       .notEmpty()
-//       .withMessage("El nombre es obligatorio")
-//       .escape(),
-//     body("Precio")
-//       .notEmpty()
-//       .withMessage("El precio es obligatorio")
-//       .isFloat({ gt: 0 })
-//       .withMessage("El precio debe ser un número positivo"),
-//     body("Descripcion").trim().escape(),
-//   ],
-//   async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res.status(400).render("crear.ejs", {
-//         modelo: req.body,
-//         errores: errors.array(),
-//       });
-//     }
-
-//     const { Nombre, Precio, Descripcion } = req.body;
-
-//     try {
-//       await db.sql`INSERT INTO Productos (Nombre, Precio, Descripcion) VALUES (${Nombre}, ${Precio}, ${Descripcion})`;
-//       res.redirect("/productos");
-//     } catch (err) {
-//       console.error("Error creando producto:", err);
-//       res.status(500).send("Error al crear producto");
-//     }
-//   }
-// );
-
 app.get(
   "/editar/:id",
   autenticarJWT,
@@ -291,49 +252,6 @@ app.get(
     res.sendFile(path.join(__dirname, "Front", "editar_producto.html"));
   }
 );
-
-// //sanitizacion y validacion (REEMPLAZADA POR APP.PUT("/api/productos/:id"))
-// app.post(
-//   "/editar/:id",
-//   autenticarJWT,
-//   autorizarRoles("empleado", "admin"),
-//   limiterCRUD,
-//   [
-//     body("Nombre")
-//       .trim()
-//       .notEmpty()
-//       .withMessage("El nombre es obligatorio")
-//       .escape(),
-//     body("Precio")
-//       .notEmpty()
-//       .withMessage("El precio es obligatorio")
-//       .isFloat({ gt: 0 })
-//       .withMessage("El precio debe ser un número positivo"),
-//     body("Descripcion").trim().escape(),
-//   ],
-//   async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       // Puedes pasar los errores y datos para que el usuario corrija
-//       return res.status(400).render("editar.ejs", {
-//         modelo: { ...req.body, Producto_ID: req.params.id },
-//         errores: errors.array(),
-//       });
-//     }
-
-//     try {
-//       await db.sql`
-//         UPDATE Productos
-//         SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion}
-//         WHERE Producto_ID = ${req.params.id}
-//       `;
-//       res.redirect("/productos");
-//     } catch (err) {
-//       console.error("✏️ Error actualizando producto:", err);
-//       res.status(500).send("Error al actualizar");
-//     }
-//   }
-// );
 
 app.delete(
   "/api/productos/:id",
@@ -362,16 +280,6 @@ app.delete(
 
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "Front", "login.html"));
-});
-
-app.get("/api/usuario", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json(null);
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(401).json(null);
-    res.json({ usuario: user.usuario, rol: user.rol });
-  });
 });
 
 app.post("/logout", (req, res) => {
@@ -425,6 +333,16 @@ app.post("/login", limiterLogin, async (req, res) => {
       .status(500)
       .json({ errores: [{ msg: "Error interno del servidor" }] });
   }
+});
+
+app.get("/api/usuario", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json(null);
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(401).json(null);
+    res.json({ usuario: user.usuario, rol: user.rol });
+  });
 });
 
 app.get(
