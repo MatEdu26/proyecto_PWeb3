@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/style.css" />
+    <title>Crear Usuario - Distribuidora Casavieja</title>
+  </head>
+  <body>
+    <header class="header">
+      <img
+        src="/proyecto_PWeb3/Front/img/banner.jpg"
+        alt="Imagen Superior"
+        class="banner-img"
+      />
+      <nav class="menu" id="menu-nav">
+        <a href="/proyecto_PWeb3/Front/index.html">Inicio</a>
+        <a href="/proyecto_PWeb3/Front/productos.html">Productos</a>
+        <a href="/proyecto_PWeb3/Front/nosotros.html">Nosotros</a>
+      </nav>
+      <div class="user-actions" id="user-actions"></div>
+    </header>
+
+    <main>
+      <h1>Crear Nuevo Usuario</h1>
+      <form id="form-crear-usuario">
+        <label for="usuario">Usuario:</label>
+        <input
+          type="text"
+          id="usuario"
+          name="usuario"
+          required
+          maxlength="50"
+        />
+
+        <label for="contraseña">Contraseña:</label>
+        <input
+          type="password"
+          id="contraseña"
+          name="contraseña"
+          required
+          minlength="6"
+        />
+
+        <label for="rol">Rol:</label>
+        <select id="rol" name="rol" required>
+          <option value="">Seleccione un rol</option>
+          <option value="admin">Admin</option>
+          <option value="empleado">Empleado</option>
+          <option value="usuario">Usuario</option>
+        </select>
+
+        <button type="submit">Crear Usuario</button>
+        <div id="mensaje" class="mensaje"></div>
+      </form>
+    </main>
+
+    <footer class="footer">
+      <p>©2025 Matias Bassi. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/proyecto_PWeb3/Front/js/index.js"></script>
+    <script src="/proyecto_PWeb3/Front/js/crear_usuario.js"></script>
+  </body>
+</html>

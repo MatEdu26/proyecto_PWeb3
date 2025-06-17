@@ -428,7 +428,7 @@ app.post("/login", limiterLogin, async (req, res) => {
 });
 
 app.get(
-  "/admin/usuarios",
+  "/api/admin/usuarios",
   autenticarJWT,
   autorizarRoles("admin"),
   async (req, res) => {
@@ -445,25 +445,16 @@ app.get(
 
       const totalPages = Math.ceil(totalUsuarios / limit);
 
-      res.render("admin_usuarios.ejs", { usuarios, page, totalPages });
+      res.json({ usuarios, page, totalPages });
     } catch (err) {
       console.error("Error obteniendo usuarios:", err);
-      res.status(500).send("Error interno del servidor");
+      res.status(500).json({ error: "Error interno del servidor" });
     }
   }
 );
 
-app.get(
-  "/admin/usuarios/crear",
-  autenticarJWT,
-  autorizarRoles("admin"),
-  (req, res) => {
-    res.render("crear_usuario.ejs", { errores: [], modelo: {} });
-  }
-);
-
 app.post(
-  "/admin/usuarios/crear",
+  "/api/admin/usuarios",
   autenticarJWT,
   autorizarRoles("admin"),
   [
@@ -480,48 +471,44 @@ app.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).render("crear_usuario.ejs", {
-        errores: errors.array(),
-        modelo: req.body,
-      });
+      return res.status(400).json({ errores: errors.array() });
     }
     try {
       const hash = await bcrypt.hash(req.body.contraseña, 10);
       await db.sql`INSERT INTO Usuarios (usuario, contraseña, rol) VALUES (${req.body.usuario}, ${hash}, ${req.body.rol})`;
-      req.flash("success_msg", "Usuario creado correctamente");
-      res.redirect("/admin/usuarios");
+      res.status(201).json({ mensaje: "Usuario creado correctamente" });
     } catch (err) {
       console.error("Error creando usuario:", err);
-      req.flash("error_msg", "Error al crear usuario");
-      res.redirect("/admin/usuarios/crear");
+      res.status(500).json({ error: "Error al crear usuario" });
     }
   }
 );
 
-//eliminar usuarios
 app.delete(
-  "/admin/usuarios/:id",
+  "/api/admin/usuarios/:id",
   autenticarJWT,
   autorizarRoles("admin"),
   async (req, res) => {
     try {
-      if (
-        req.user.usuario ===
-        (
-          await db.sql`SELECT usuario FROM Usuarios WHERE id = ${req.params.id}`
-        )[0].usuario
-      ) {
-        req.flash("error_msg", "No puedes eliminar tu propio usuario");
-        return res.redirect("/admin/usuarios");
+      const usuarioEliminar = (
+        await db.sql`SELECT usuario FROM Usuarios WHERE id = ${req.params.id}`
+      )[0];
+
+      if (!usuarioEliminar) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      if (req.user.usuario === usuarioEliminar.usuario) {
+        return res
+          .status(400)
+          .json({ error: "No puedes eliminar tu propio usuario" });
       }
 
       await db.sql`DELETE FROM Usuarios WHERE id = ${req.params.id}`;
-      req.flash("success_msg", "Usuario eliminado correctamente");
-      res.redirect("/admin/usuarios");
+      res.json({ mensaje: "Usuario eliminado correctamente" });
     } catch (err) {
       console.error("Error eliminando usuario:", err);
-      req.flash("error_msg", "Error al eliminar usuario");
-      res.redirect("/admin/usuarios");
+      res.status(500).json({ error: "Error al eliminar usuario" });
     }
   }
 );

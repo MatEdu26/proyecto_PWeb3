@@ -11,7 +11,7 @@ async function cargarUsuario() {
       // Agregar link de gestión usuarios si es admin
       if (user.rol === 'admin') {
         const adminLink = document.createElement('a');
-        adminLink.href = '/admin/usuarios';
+        adminLink.href = '/proyecto_PWeb3/Front/admin_usuarios.html';
         adminLink.textContent = 'Gestión de Usuarios';
         menuNav.appendChild(adminLink);
       }

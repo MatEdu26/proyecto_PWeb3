@@ -4,8 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/style.css" />
-    <link rel="stylesheet" href="/proyecto_PWeb3/Front/css/eliminarprod.css" />
-    <title>Eliminar Producto</title>
+    <link
+      rel="stylesheet"
+      href="/proyecto_PWeb3/Front/css/admin_usuarios.css"
+    />
+    <title>Gestión de Usuarios</title>
   </head>
   <body>
     <header class="header">
@@ -18,27 +21,39 @@
         <a href="/proyecto_PWeb3/Front/index.html">Inicio</a>
         <a href="/proyecto_PWeb3/Front/productos.html">Productos</a>
         <a href="/proyecto_PWeb3/Front/nosotros.html">Nosotros</a>
+        <!-- El link a usuarios se agrega dinámicamente si es admin -->
       </nav>
       <div class="user-actions" id="user-actions"></div>
     </header>
 
     <main>
-      <h1>Confirmar Eliminación de Producto</h1>
-      <div class="producto-eliminar-info" id="producto-info">
-        <p>Cargando información del producto...</p>
-      </div>
-      <div class="acciones-eliminar">
-        <button id="btn-eliminar">Confirmar Eliminación</button>
-        <button id="btn-cancelar">Cancelar</button>
-      </div>
+      <h1>Gestión de Usuarios</h1>
+      <button class="crear-btn" id="btn-crear-usuario">
+        Crear nuevo usuario
+      </button>
       <div id="mensaje" class="mensaje"></div>
+      <div style="overflow-x: auto">
+        <table class="usuarios-table" id="usuarios-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Creado en</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Usuarios se cargan aquí -->
+          </tbody>
+        </table>
+      </div>
     </main>
-
     <footer class="footer">
       <p>©2025 Matias Bassi. Todos los derechos reservados.</p>
     </footer>
 
     <script src="/proyecto_PWeb3/Front/js/index.js"></script>
-    <script src="/proyecto_PWeb3/Front/js/eliminarprod.js"></script>
+    <script src="/proyecto_PWeb3/Front/js/admin_usuarios.js"></script>
   </body>
 </html>
