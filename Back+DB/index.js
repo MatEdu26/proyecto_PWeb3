@@ -56,13 +56,14 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: ["http://localhost:5501", "http://127.0.0.1:5501"], // Origen permitido (tu frontend)
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
-  allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
-  credentials: true, // Permite enviar cookies y credenciales
+  origin: ["http://localhost:5501", "http://127.0.0.1:5501"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // booleano, no string
 };
 
 app.use(cors(corsOptions));
+
 
 app.listen(3000);
 console.log("Servidor funcionando en el puerto 3000");
@@ -123,11 +124,11 @@ app.get("/nosotros", (req, res) => {
   res.sendFile(path.join(__dirname, "Front", "nosotros.html"));
 });
 
-app.get("/productos", autenticarJWT, (req, res) => {
+app.get("/productos", (req, res) => {
   res.sendFile(path.join(__dirname, "Front", "productos.html"));
 });
 
-app.get("/api/productos", autenticarJWT, async (req, res) => {
+app.get("/api/productos", async (req, res) => {
   try {
     const result = await db.sql("SELECT * FROM Productos ORDER BY Nombre");
     res.json(result);

@@ -1,8 +1,8 @@
-const ENDPOINT = "/api/productos";
+const ENDPOINT = "http://localhost:3000/api/productos";
 
 async function cargarProductos() {
   try {
-    const resp = await fetch(ENDPOINT, { credentials: "include" });
+    const resp = await fetch(ENDPOINT);
     if (!resp.ok) throw new Error("No se pudo cargar productos");
     const productos = await resp.json();
 
@@ -39,6 +39,7 @@ async function cargarProductos() {
   } catch (err) {
     document.getElementById("productos-contenedor").innerHTML =
       "<p>Error cargando productos.</p>";
+    console.error(err);
   }
 }
 

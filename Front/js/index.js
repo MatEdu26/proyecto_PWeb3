@@ -34,8 +34,9 @@ async function cargarUsuario() {
       // Mostrar botón login
       userActions.innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
     }
-  } catch (error) {
-    document.getElementById('user-actions').innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
+   } catch (error) {
+    const userActions = document.getElementById('user-actions');
+    userActions.innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
   }
 }
 
