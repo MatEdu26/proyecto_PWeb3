@@ -48,7 +48,7 @@ app.use(morgan("combined"));
 crearTabla();
 crearTablaUsuarios();
 
-app.use('/proyecto_PWeb3/Front', express.static(path.join(__dirname, 'Front')));
+app.use(express.static(path.join(__dirname, 'Front'), { index: 'index.html' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -116,9 +116,10 @@ function autorizarRoles(...roles) {
   };
 }
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "Front", "index.html"));
+app.get('/', (req, res) => {
+  res.redirect('/proyecto_PWeb3/Front/index.html');
 });
+
 
 app.get("/nosotros", (req, res) => {
   res.sendFile(path.join(__dirname, "Front", "nosotros.html"));
