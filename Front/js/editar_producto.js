@@ -1,4 +1,3 @@
-// Obtener el ID del producto desde la URL (?id=)
 const urlParams = new URLSearchParams(window.location.search);
 const productoId = urlParams.get("id");
 
@@ -9,10 +8,9 @@ if (!productoId) {
   mensaje.textContent = "ID de producto no especificado.";
   mensaje.classList.add("error");
 } else {
-  // Cargar datos del producto para editar
   async function cargarProducto() {
     try {
-      const resp = await fetch(`/api/productos/${productoId}`, {
+      const resp = await fetch(`${window.BACKEND_URL}/api/productos/${productoId}`, {
         credentials: "include",
       });
       if (!resp.ok) throw new Error("No se pudo cargar el producto.");
@@ -47,7 +45,7 @@ if (!productoId) {
     }
 
     try {
-      const resp = await fetch(`/api/productos/${productoId}`, {
+      const resp = await fetch(`${window.BACKEND_URL}/api/productos/${productoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,6 +1,6 @@
-const http = require("http");
+require('dotenv').config();
+
 const express = require("express");
-const app = express();
 const path = require("path");
 const db = require("./config_DB/db");
 const crearTabla = require("./config_DB/initDB");
@@ -10,28 +10,32 @@ const morgan = require("morgan");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const methodOverride = require("method-override");
-const { rateLimit } = require('express-rate-limit');
-const JWT_SECRET = "clave_token";
+const { rateLimit } = require("express-rate-limit");
 const session = require("express-session");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = "clave_token";
 
 app.use(
   session({
-    secret: "tu_secreto_de_sesion", // cambia por algo seguro
+    secret: "tu_secreto_de_sesion",
     resave: false,
     saveUninitialized: false,
   })
 );
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 peticiones por IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: "Demasiadas peticiones desde esta IP. Intenta más tarde.",
 });
 
 const limiterLogin = rateLimit({
-  windowMs: 10 * 60 * 1000, // 15 minutos
-  max: 5, // máximo 5 intentos de login por IP
+  windowMs: 10 * 60 * 1000,
+  max: 5,
   message: "Demasiados intentos de login. Intenta más tarde.",
 });
 
@@ -42,71 +46,37 @@ const limiterCRUD = rateLimit({
 });
 
 app.use(limiter);
-
 app.use(morgan("combined"));
-
-crearTabla();
-crearTablaUsuarios();
-
-app.use(express.static(path.join(__dirname, 'Front'), { index: 'index.html' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(methodOverride("_method"));
-const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: ["http://localhost:5501", "http://127.0.0.1:5501"],
+  origin: [process.env.FRONTEND_URL],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // booleano, no string
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
 
+crearTabla();
+crearTablaUsuarios();
 
-app.listen(3000);
-console.log("Servidor funcionando en el puerto 3000");
-
+// Middleware para autenticar JWT desde cookie
 function autenticarJWT(req, res, next) {
   const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: "No autorizado" });
-  }
+  if (!token) return res.status(401).json({ error: "No autorizado" });
+
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(401).json({ error: "Token inválido" });
-    }
+    if (err) return res.status(401).json({ error: "Token inválido" });
     req.user = user;
     next();
   });
 }
 
-
-app.use((req, res, next) => {
-  res.locals.user = req.user || null;
-  next();
-});
-
-function cargarUsuario(req, res, next) {
-  const token = req.cookies.token; // lee token desde cookie
-  if (token) {
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-      if (!err) req.user = user;
-      next();
-    });
-  } else {
-    next();
-  }
-}
-
-app.use(cargarUsuario);
-
-app.use((req, res, next) => {
-  res.locals.user = req.user || null;
-  next();
-});
-
+// Middleware para autorizar roles
 function autorizarRoles(...roles) {
   return (req, res, next) => {
     if (!roles.includes(req.user.rol)) {
@@ -116,28 +86,45 @@ function autorizarRoles(...roles) {
   };
 }
 
-app.get('/', (req, res) => {
-  res.redirect('/proyecto_PWeb3/Front/index.html');
+// Endpoint raíz solo devuelve mensaje JSON
+app.get("/", (req, res) => {
+  res.json({ mensaje: "API REST funcionando" });
 });
 
-
-app.get("/nosotros", (req, res) => {
-  res.sendFile(path.join(__dirname, "Front", "nosotros.html"));
-});
-
-app.get("/productos", (req, res) => {
-  res.sendFile(path.join(__dirname, "Front", "productos.html"));
-});
+// Rutas Productos
 
 app.get("/api/productos", async (req, res) => {
   try {
     const result = await db.sql("SELECT * FROM Productos ORDER BY Nombre");
     res.json(result);
   } catch (err) {
-    console.error("🚨 Error obteniendo productos:", err);
+    console.error("Error obteniendo productos:", err);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+app.get(
+  "/api/productos/:id",
+  autenticarJWT,
+  autorizarRoles("empleado", "admin"),
+  [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ error: "ID inválido" });
+
+    try {
+      const result =
+        await db.sql`SELECT * FROM Productos WHERE Producto_ID = ${req.params.id}`;
+      if (result.length === 0)
+        return res.status(404).json({ error: "Producto no encontrado" });
+      res.json(result[0]);
+    } catch (err) {
+      console.error("Error obteniendo producto:", err);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+);
 
 app.post(
   "/api/productos",
@@ -159,9 +146,8 @@ app.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty())
       return res.status(400).json({ errores: errors.array() });
-    }
 
     const { Nombre, Precio, Descripcion } = req.body;
 
@@ -172,39 +158,6 @@ app.post(
       console.error("Error creando producto:", err);
       res.status(500).json({ error: "Error al crear producto" });
     }
-  }
-);
-
-app.get(
-  "/api/productos/:id",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: "ID inválido" });
-    }
-    try {
-      const result =
-        await db.sql`SELECT * FROM Productos WHERE Producto_ID = ${req.params.id}`;
-      if (result.length === 0) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-      }
-      res.json(result[0]);
-    } catch (err) {
-      console.error("📝 Error obteniendo producto:", err);
-      res.status(500).json({ error: "Error interno del servidor" });
-    }
-  }
-);
-
-app.get(
-  "/crear",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  (req, res) => {
-    res.sendFile(path.join(__dirname, "Front", "crear_producto.html"));
   }
 );
 
@@ -228,35 +181,20 @@ app.put(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty())
       return res.status(400).json({ errores: errors.array() });
-    }
 
     try {
-      const result = await db.sql`
+      await db.sql`
         UPDATE Productos 
         SET Nombre = ${req.body.Nombre}, Precio = ${req.body.Precio}, Descripcion = ${req.body.Descripcion} 
         WHERE Producto_ID = ${req.params.id}
       `;
       res.json({ mensaje: "Producto actualizado con éxito" });
     } catch (err) {
-      console.error("✏️ Error actualizando producto:", err);
+      console.error("Error actualizando producto:", err);
       res.status(500).json({ error: "Error al actualizar producto" });
     }
-  }
-);
-
-app.get(
-  "/editar/:id",
-  autenticarJWT,
-  autorizarRoles("empleado", "admin"),
-  [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).send("ID inválido");
-    }
-    res.sendFile(path.join(__dirname, "Front", "editar_producto.html"));
   }
 );
 
@@ -268,80 +206,23 @@ app.delete(
   [param("id").isInt({ gt: 0 }).withMessage("ID inválido")],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty())
       return res.status(400).json({ errores: errors.array() });
-    }
+
     try {
       const result =
         await db.sql`DELETE FROM Productos WHERE Producto_ID = ${req.params.id}`;
-      if (result.rowsAffected === 0) {
+      if (result.rowsAffected === 0)
         return res.status(404).json({ error: "Producto no encontrado" });
-      }
-      res.status(200).json({ mensaje: "Producto eliminado con éxito" });
+      res.json({ mensaje: "Producto eliminado con éxito" });
     } catch (err) {
-      console.error("🗑️ Error eliminando producto:", err);
+      console.error("Error eliminando producto:", err);
       res.status(500).json({ error: "Error al eliminar producto" });
     }
   }
 );
 
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "Front", "login.html"));
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.redirect("/login");
-});
-
-app.post("/login", limiterLogin, async (req, res) => {
-  const { usuario, contraseña } = req.body;
-
-  // Validar campos (puedes usar express-validator o manualmente)
-  if (!usuario || !contraseña) {
-    return res
-      .status(400)
-      .json({ errores: [{ msg: "Usuario y contraseña son obligatorios" }] });
-  }
-
-  try {
-    const user =
-      await db.sql`SELECT * FROM Usuarios WHERE usuario = ${usuario}`;
-
-    if (!user[0]) {
-      return res
-        .status(401)
-        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
-    }
-
-    const match = await bcrypt.compare(contraseña, user[0].contraseña);
-    if (!match) {
-      return res
-        .status(401)
-        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
-    }
-
-    const token = jwt.sign(
-      { usuario: user[0].usuario, rol: user[0].rol },
-      JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // Cambiar a true si usas HTTPS
-      sameSite: "lax",
-      maxAge: 2 * 60 * 60 * 1000,
-    });
-
-    return res.status(200).json({ mensaje: "Login exitoso" });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ errores: [{ msg: "Error interno del servidor" }] });
-  }
-});
+// Rutas Usuarios
 
 app.get("/api/usuario", (req, res) => {
   const token = req.cookies.token;
@@ -396,9 +277,9 @@ app.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty())
       return res.status(400).json({ errores: errors.array() });
-    }
+
     try {
       const hash = await bcrypt.hash(req.body.contraseña, 10);
       await db.sql`INSERT INTO Usuarios (usuario, contraseña, rol) VALUES (${req.body.usuario}, ${hash}, ${req.body.rol})`;
@@ -420,9 +301,8 @@ app.delete(
         await db.sql`SELECT usuario FROM Usuarios WHERE id = ${req.params.id}`
       )[0];
 
-      if (!usuarioEliminar) {
+      if (!usuarioEliminar)
         return res.status(404).json({ error: "Usuario no encontrado" });
-      }
 
       if (req.user.usuario === usuarioEliminar.usuario) {
         return res
@@ -439,7 +319,65 @@ app.delete(
   }
 );
 
-//este metodo siempre debe ir al final
+// Login y logout
+
+app.post("/login", limiterLogin, async (req, res) => {
+  const { usuario, contraseña } = req.body;
+
+  if (!usuario || !contraseña) {
+    return res
+      .status(400)
+      .json({ errores: [{ msg: "Usuario y contraseña son obligatorios" }] });
+  }
+
+  try {
+    const user =
+      await db.sql`SELECT * FROM Usuarios WHERE usuario = ${usuario}`;
+
+    if (!user[0]) {
+      return res
+        .status(401)
+        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
+    }
+
+    const match = await bcrypt.compare(contraseña, user[0].contraseña);
+    if (!match) {
+      return res
+        .status(401)
+        .json({ errores: [{ msg: "Usuario o contraseña incorrectos" }] });
+    }
+
+    const token = jwt.sign(
+      { usuario: user[0].usuario, rol: user[0].rol },
+      JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 2 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ mensaje: "Login exitoso" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ errores: [{ msg: "Error interno del servidor" }] });
+  }
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ mensaje: "Logout exitoso" });
+});
+
+// Middleware para 404 - siempre al final
 app.use((req, res, next) => {
-  res.status(404).sendFile(path.join(__dirname, "Front", "404.html"));
+  res.status(404).json({ error: "Recurso no encontrado" });
+});
+
+// Levantar servidor
+app.listen(PORT, () => {
+  console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
 });

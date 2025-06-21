@@ -1,6 +1,7 @@
 const form = document.getElementById("form-crear-producto");
 const mensaje = document.getElementById("mensaje");
 
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   mensaje.textContent = "";
@@ -19,7 +20,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    const resp = await fetch("/api/productos", {
+    const resp = await fetch(`${window.BACKEND_URL}/api/productos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

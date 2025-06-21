@@ -19,7 +19,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    const resp = await fetch("/api/admin/usuarios", {
+    const resp = await fetch(`${window.BACKEND_URL}/api/admin/usuarios`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -40,7 +40,7 @@ form.addEventListener("submit", async (e) => {
     form.reset();
 
     setTimeout(() => {
-      window.location.href = "/proyecto_PWeb3/Front/admin_usuarios.html";
+      window.location.href = "/admin_usuarios"; // ruta limpia sin prefijo ni .html
     }, 1500);
   } catch (err) {
     mensaje.textContent = err.message;

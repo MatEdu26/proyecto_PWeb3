@@ -1,4 +1,4 @@
-const ENDPOINT = "http://localhost:3000/api/productos";
+const ENDPOINT = `${window.BACKEND_URL}/api/productos`;
 
 async function cargarProductos() {
   try {
@@ -18,22 +18,18 @@ async function cargarProductos() {
       const tarjeta = document.createElement("div");
       tarjeta.className = "tarjeta-producto";
       tarjeta.innerHTML = `
-            <h3>${prod.Nombre}</h3>
-            <div class="precio">$${parseFloat(prod.Precio).toFixed(2)}</div>
-            <div class="descripcion">${prod.Descripcion || ""}</div>
-            <div class="acciones">
-              <a href="/proyecto_PWeb3/Front/editar_producto.html?id=${
-                prod.Producto_ID
-              }">
-                <button>Editar</button>
-              </a>
-              <a href="/proyecto_PWeb3/Front/eliminarprod.html?id=${
-                prod.Producto_ID
-              }">
-                <button class="eliminar">Eliminar</button>
-              </a>
-            </div>
-          `;
+        <h3>${prod.Nombre}</h3>
+        <div class="precio">$${parseFloat(prod.Precio).toFixed(2)}</div>
+        <div class="descripcion">${prod.Descripcion || ""}</div>
+        <div class="acciones">
+          <a href="/editar_producto?id=${prod.Producto_ID}">
+            <button>Editar</button>
+          </a>
+          <a href="/eliminarprod?id=${prod.Producto_ID}">
+            <button class="eliminar">Eliminar</button>
+          </a>
+        </div>
+      `;
       contenedor.appendChild(tarjeta);
     });
   } catch (err) {

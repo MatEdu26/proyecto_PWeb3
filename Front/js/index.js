@@ -1,6 +1,6 @@
 async function cargarUsuario() {
   try {
-    const res = await fetch('http://localhost:3000/api/usuario', { credentials: 'include' });
+    const res = await fetch(`${window.BACKEND_URL}/api/usuario`, { credentials: 'include' });
     if (!res.ok) throw new Error('No autorizado');
     const user = await res.json();
 
@@ -11,7 +11,7 @@ async function cargarUsuario() {
       // Agregar link de gestión usuarios si es admin
       if (user.rol === 'admin') {
         const adminLink = document.createElement('a');
-        adminLink.href = '/proyecto_PWeb3/Front/admin_usuarios.html';
+        adminLink.href = '/admin_usuarios'; // ruta limpia sin prefijo ni .html
         adminLink.textContent = 'Gestión de Usuarios';
         menuNav.appendChild(adminLink);
       }
@@ -26,17 +26,17 @@ async function cargarUsuario() {
 
       document.getElementById('logout-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        await fetch('http://localhost:3000/logout', { method: 'POST', credentials: 'include' });
-        window.location.href = '/proyecto_PWeb3/Front/login.html';
+        await fetch(`${window.BACKEND_URL}/logout`, { method: 'POST', credentials: 'include' });
+        window.location.href = '/login'; // ruta limpia sin prefijo ni .html
       });
 
     } else {
       // Mostrar botón login
-      userActions.innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
+      userActions.innerHTML = `<a href="/login" class="login-btn">Login</a>`; // ruta limpia
     }
-   } catch (error) {
+  } catch (error) {
     const userActions = document.getElementById('user-actions');
-    userActions.innerHTML = `<a href="/proyecto_PWeb3/Front/login.html" class="login-btn">Login</a>`;
+    userActions.innerHTML = `<a href="/login" class="login-btn">Login</a>`; // ruta limpia
   }
 }
 

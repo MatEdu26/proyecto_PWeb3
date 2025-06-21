@@ -4,11 +4,12 @@ const tablaUsuarios = document
 const mensajeDiv = document.getElementById("mensaje");
 const btnCrearUsuario = document.getElementById("btn-crear-usuario");
 
+
 // Cargar usuarios
 async function cargarUsuarios() {
   mensajeDiv.textContent = "";
   try {
-    const resp = await fetch("/api/admin/usuarios", { credentials: "include" });
+    const resp = await fetch(`${window.BACKEND_URL}/api/admin/usuarios`, { credentials: "include" });
     if (!resp.ok) throw new Error("No se pudieron obtener los usuarios");
     const data = await resp.json();
     const usuarios = data.usuarios || [];
@@ -53,7 +54,7 @@ async function cargarUsuarios() {
 async function eliminarUsuario(id) {
   mensajeDiv.textContent = "";
   try {
-    const resp = await fetch(`/api/admin/usuarios/${id}`, {
+    const resp = await fetch(`${window.BACKEND_URL}/api/admin/usuarios/${id}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -70,7 +71,7 @@ async function eliminarUsuario(id) {
 
 // Redirigir a crear usuario
 btnCrearUsuario.addEventListener("click", () => {
-  window.location.href = "/proyecto_PWeb3/Front/crear_usuario.html";
+  window.location.href = "/crear_usuario"; // ruta limpia sin prefijo ni .html
 });
 
 // Inicializar

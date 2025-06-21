@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch(`${window.BACKEND_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ usuario, contraseña }),
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok) {
         // Login exitoso, redirigir a inicio
-        window.location.href = '/';
+        window.location.href = '/'; // ruta limpia
       } else if (response.status === 401) {
         const data = await response.json();
         errorDiv.style.display = 'block';

@@ -1,4 +1,3 @@
-// Obtener el ID del producto desde la URL (?id=)
 const urlParams = new URLSearchParams(window.location.search);
 const productoId = urlParams.get("id");
 
@@ -7,16 +6,15 @@ const btnEliminar = document.getElementById("btn-eliminar");
 const btnCancelar = document.getElementById("btn-cancelar");
 const mensajeDiv = document.getElementById("mensaje");
 
-// Función para cargar los datos del producto
 async function cargarProductoParaEliminar() {
   if (!productoId) {
     productoInfoDiv.innerHTML = "<p>Error: ID de producto no especificado.</p>";
-    btnEliminar.disabled = true; // Deshabilita el botón si no hay ID
+    btnEliminar.disabled = true;
     return;
   }
 
   try {
-    const resp = await fetch(`/api/productos/${productoId}`, {
+    const resp = await fetch(`${window.BACKEND_URL}/api/productos/${productoId}`, {
       credentials: "include",
     });
 
@@ -45,10 +43,9 @@ async function cargarProductoParaEliminar() {
   }
 }
 
-// Función para eliminar el producto
 async function eliminarProducto() {
   try {
-    const resp = await fetch(`/api/productos/${productoId}`, {
+    const resp = await fetch(`${window.BACKEND_URL}/api/productos/${productoId}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -60,9 +57,9 @@ async function eliminarProducto() {
 
     mensajeDiv.textContent = "Producto eliminado con éxito.";
     mensajeDiv.classList.add("exito");
-    // Redirigir a la lista de productos después de un breve retraso
+
     setTimeout(() => {
-      window.location.href = "/proyecto_PWeb3/Front/productos.html";
+      window.location.href = "/productos"; // ruta limpia sin prefijo ni .html
     }, 1500);
   } catch (err) {
     mensajeDiv.textContent = err.message;
@@ -70,11 +67,9 @@ async function eliminarProducto() {
   }
 }
 
-// Event Listeners
 btnEliminar.addEventListener("click", eliminarProducto);
 btnCancelar.addEventListener("click", () => {
-  window.location.href = "/proyecto_PWeb3/Front/productos.html";
+  window.location.href = "/productos"; // ruta limpia sin prefijo ni .html
 });
 
-// Cargar el producto al cargar la página
 window.onload = cargarProductoParaEliminar;
